@@ -9,6 +9,6 @@ import java.math.BigDecimal;
 public record FundraisingEvent(
         @Id Integer id,
         String name,
-        String currency,
+        Integer currencyId,
         BigDecimal money
 ) {}
