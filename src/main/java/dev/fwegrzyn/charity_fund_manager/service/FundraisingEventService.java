@@ -1,5 +1,6 @@
 package dev.fwegrzyn.charity_fund_manager.service;
 
+import dev.fwegrzyn.charity_fund_manager.exception.ResourceNotFoundException;
 import dev.fwegrzyn.charity_fund_manager.model.Currency;
 import dev.fwegrzyn.charity_fund_manager.model.FundraisingEvent;
 import dev.fwegrzyn.charity_fund_manager.repository.CurrencyRepository;
@@ -19,14 +20,14 @@ public class FundraisingEventService {
         this.currencyRepository = currencyRepository;
     }
 
-    public Optional<FundraisingEvent> createEvent(String eventName, String currencyCode) {
+    public FundraisingEvent createEvent(String eventName, String currencyCode) {
         Optional<Currency> currency = currencyRepository.findByName(currencyCode);
 
         if (currency.isEmpty()) {
-            return Optional.empty();
+            throw new ResourceNotFoundException("Currency " + currencyCode + " not found");
         }
 
         FundraisingEvent event = new FundraisingEvent(null, eventName, currency.get().id(), BigDecimal.ZERO);
-        return Optional.of(fundraisingEventRepository.save(event));
+        return fundraisingEventRepository.save(event);
     }
 }

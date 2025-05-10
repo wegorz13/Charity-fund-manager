@@ -19,8 +19,7 @@ public class FundraisingEventController {
 
     @PostMapping
     public ResponseEntity<FundraisingEvent> createEvent(@RequestBody CreateFundraisingEventRequest request) {
-        return fundraisingEventService.createEvent(request.getName(), request.getCurrency())
-                .map(event -> new ResponseEntity<>(event, HttpStatus.CREATED))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+        FundraisingEvent createdEvent = fundraisingEventService.createEvent(request.name(), request.currency());
+        return new ResponseEntity<>(createdEvent, HttpStatus.CREATED);
     }
 }
