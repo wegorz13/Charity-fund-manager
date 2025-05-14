@@ -51,14 +51,13 @@ class ExchangeRateServiceTest {
         rates.put("PLN", new BigDecimal("4.20"));
         rates.put("GBP", new BigDecimal("0.75"));
         apiDto.setExchangeRates(rates);
-
-        doReturn(uriSpec).when(restClient).get();
-        doReturn(headersSpec).when(uriSpec).uri(any(Function.class));
     }
 
     @Test
     void fetchLatestRates_ReturnsFilteredRates_WhenApiReturnsData() {
         // Given
+        doReturn(uriSpec).when(restClient).get();
+        doReturn(headersSpec).when(uriSpec).uri(any(Function.class));
         doReturn(responseSpec).when(headersSpec).retrieve();
         doReturn(apiDto).when(responseSpec).body(ExchangeApiDTO.class);
 
@@ -81,13 +80,19 @@ class ExchangeRateServiceTest {
     @Test
     void fetchLatestRates_ReturnsEmpty_WhenRestClientThrowsException() {
         // Given
-        doThrow(new RestClientException("API error")).when(headersSpec).retrieve();
+        doReturn(uriSpec).when(restClient).get();
+        doReturn(headersSpec).when(uriSpec).uri(any(Function.class));
+        doThrow(new RestClientException("API error"))
+                .when(headersSpec).retrieve();
 
         // When
-        Optional<Map<String, BigDecimal>> result = service.fetchLatestRates("USD", List.of("EUR", "PLN"));
+        Optional<Map<String, BigDecimal>> result =
+                service.fetchLatestRates("USD", List.of("EUR", "PLN"));
 
         // Then
-        assertFalse(result.isPresent(), "Result should be empty when RestClient throws exception");
+        assertFalse(result.isPresent(),
+                "Result should be empty when RestClient throws exception");
+
         verify(restClient).get();
         verify(uriSpec).uri(any(Function.class));
         verify(headersSpec).retrieve();

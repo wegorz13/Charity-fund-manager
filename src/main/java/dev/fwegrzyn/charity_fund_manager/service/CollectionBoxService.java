@@ -74,7 +74,7 @@ public class CollectionBoxService {
         }
 
         if (!fundraisingEventRepository.existsById(eventId)) {
-            throw new ResourceNotFoundException("Event " + eventId + " not found");
+            throw new ResourceNotFoundException("Event with ID: " + eventId + " not found");
         }
 
         boolean hasMoney = box.getBalances().stream()

@@ -128,7 +128,7 @@ public class CollectionBoxControllerTest {
         doNothing().when(collectionBoxService).donateMoneyToBox(eq(1), eq("USD"), any(BigDecimal.class));
 
         // When & Then
-        mockMvc.perform(put("/api/boxes/donate")
+        mockMvc.perform(post("/api/boxes/donate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
@@ -143,9 +143,7 @@ public class CollectionBoxControllerTest {
         doNothing().when(collectionBoxService).transferMoneyToEvent(boxId);
 
         // When & Then
-        mockMvc.perform(put("/api/boxes/transfer")
-                        .param("box_id", boxId.toString()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(post("/api/boxes/transfer/{id}", boxId.toString())).andExpect(status().isNoContent());
 
         verify(collectionBoxService).transferMoneyToEvent(boxId);
     }

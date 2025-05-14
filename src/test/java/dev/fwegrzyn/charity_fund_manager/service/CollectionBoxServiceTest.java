@@ -147,7 +147,7 @@ public class CollectionBoxServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> collectionBoxService.deleteById(boxId));
 
-        assertEquals("Box 999 not found", exception.getMessage());
+        assertEquals("Box with ID: 999 not found", exception.getMessage());
         verify(collectionBoxRepository).findById(boxId);
         verify(collectionBoxRepository, never()).delete(any(CollectionBox.class));
     }
@@ -188,7 +188,7 @@ public class CollectionBoxServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> collectionBoxService.assignBoxToEvent(boxId, eventId));
 
-        assertEquals("Box 999 not found", exception.getMessage());
+        assertEquals("Box with ID: 999 not found", exception.getMessage());
         verify(collectionBoxRepository).findById(boxId);
         verify(fundraisingEventRepository, never()).existsById(anyInt());
     }
@@ -206,7 +206,7 @@ public class CollectionBoxServiceTest {
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
                 () -> collectionBoxService.assignBoxToEvent(boxId, eventId));
 
-        assertEquals("Event 999 not found", exception.getMessage());
+        assertEquals("Event with ID: 999 not found", exception.getMessage());
         verify(collectionBoxRepository).findById(boxId);
         verify(fundraisingEventRepository).existsById(eventId);
     }
@@ -264,27 +264,22 @@ public class CollectionBoxServiceTest {
         Integer boxId = 1;
         Integer eventId = 1;
 
-        // Create a box with non-zero balances
         Set<CollectionBoxBalance> nonZeroBalances = new HashSet<>();
-        nonZeroBalances.add(new CollectionBoxBalance(1, new BigDecimal("100.00"))); // 100 USD
+        nonZeroBalances.add(new CollectionBoxBalance(usdCurrency.id(), new BigDecimal("100.00")));
         CollectionBox boxWithMoney = new CollectionBox(boxId, eventId, nonZeroBalances);
 
         when(collectionBoxRepository.findById(boxId)).thenReturn(Optional.of(boxWithMoney));
         when(fundraisingEventRepository.findById(eventId)).thenReturn(Optional.of(testEvent));
         when(currencyRepository.findById(testEvent.getCurrencyId())).thenReturn(Optional.of(eurCurrency));
-        when(currencyRepository.findById(usdCurrency.id())).thenReturn(Optional.of(usdCurrency));
 
         List<ExchangeRate> rates = List.of(usdToEurRate);
         when(exchangeRateRepository.findByToCurrencyId(eurCurrency.id())).thenReturn(rates);
 
-        when(collectionBoxRepository.save(any(CollectionBox.class))).thenReturn(boxWithMoney);
-        when(fundraisingEventRepository.save(any(FundraisingEvent.class))).thenReturn(testEvent);
 
         // When
         collectionBoxService.transferMoneyToEvent(boxId);
 
         // Then
-        // Verify box balances are zeroed
         ArgumentCaptor<CollectionBox> boxCaptor = ArgumentCaptor.forClass(CollectionBox.class);
         verify(collectionBoxRepository).save(boxCaptor.capture());
 
@@ -292,7 +287,6 @@ public class CollectionBoxServiceTest {
         savedBox.getBalances().forEach(balance ->
                 assertEquals(0, balance.getAmount().compareTo(BigDecimal.ZERO)));
 
-        // Verify event money is updated (100 USD * 0.85 = 85 EUR)
         ArgumentCaptor<FundraisingEvent> eventCaptor = ArgumentCaptor.forClass(FundraisingEvent.class);
         verify(fundraisingEventRepository).save(eventCaptor.capture());
 
