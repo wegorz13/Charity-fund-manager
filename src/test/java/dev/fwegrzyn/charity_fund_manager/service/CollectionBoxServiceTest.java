@@ -61,7 +61,7 @@ public class CollectionBoxServiceTest {
         balances.add(new CollectionBoxBalance(1, BigDecimal.ZERO));
         balances.add(new CollectionBoxBalance(2, BigDecimal.ZERO));
 
-        testBox = new CollectionBox(1, null, balances);
+        testBox = CollectionBox.builder().id(1).balances(balances).build();
         testEvent = new FundraisingEvent(1, "Charity Gala", 2, BigDecimal.ZERO);
 
         usdToEurRate = new ExchangeRate(1, 1, 2, new BigDecimal("0.85"));

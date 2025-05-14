@@ -59,7 +59,7 @@ public class CollectionBoxControllerTest {
         balances.add(new CollectionBoxBalance(1, BigDecimal.ZERO));
         balances.add(new CollectionBoxBalance(2, BigDecimal.ZERO));
 
-        CollectionBox createdBox = new CollectionBox(1, null, balances);
+        CollectionBox createdBox = CollectionBox.builder().id(1).balances(balances).build();
 
         when(collectionBoxService.createBox()).thenReturn(createdBox);
 
@@ -149,10 +149,6 @@ public class CollectionBoxControllerTest {
     }
 
     private CollectionBoxDTO createBoxDTO(Integer id, boolean assigned, boolean empty) {
-        CollectionBoxDTO dto = new CollectionBoxDTO();
-        dto.setId(id);
-        dto.setAssigned(assigned);
-        dto.setEmpty(empty);
-        return dto;
+        return CollectionBoxDTO.builder().id(id).assigned(assigned).empty(empty).build();
     }
 }

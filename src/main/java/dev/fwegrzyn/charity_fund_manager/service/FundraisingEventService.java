@@ -29,7 +29,8 @@ public class FundraisingEventService {
             throw new ResourceNotFoundException("Currency " + currencyCode + " not found");
         }
 
-        FundraisingEvent event = new FundraisingEvent(null, eventName, currency.get().id(), BigDecimal.ZERO);
+        FundraisingEvent event = FundraisingEvent.builder().name(eventName).currencyId(currency.get().id()).money(BigDecimal.ZERO).build();
+
         return fundraisingEventRepository.save(event);
     }
 

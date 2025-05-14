@@ -1,9 +1,12 @@
 package dev.fwegrzyn.charity_fund_manager.service;
 
 import dev.fwegrzyn.charity_fund_manager.dto.response.ExchangeApiDTO;
-import io.github.cdimascio.dotenv.Dotenv;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,14 +17,15 @@ import java.util.stream.Collectors;
 @Service
 public class ExchangeRateService {
     private final RestClient restClient;
+    private static final Logger log = LoggerFactory.getLogger(ExchangeRateService.class);
+    @Value("${exchange.api.key}")
+    private String apiKey;
 
     public ExchangeRateService(RestClient restClient) {
         this.restClient = restClient;
     }
 
     public Optional<Map<String, BigDecimal>> fetchLatestRates(String baseCurrency, List<String> currencyCodes) {
-        Dotenv dotenv = Dotenv.load();
-        String apiKey = dotenv.get("EXCHANGE_API_KEY");
         try {
             ExchangeApiDTO dto = restClient.get()
                     .uri(uri -> uri
@@ -30,11 +34,22 @@ public class ExchangeRateService {
                     .retrieve()
                     .body(ExchangeApiDTO.class);
 
-            return Optional.of(dto.getExchangeRates().entrySet().stream()
+
+            if (dto == null) {
+                log.warn("External API returned null conversion rates for base {}", baseCurrency);
+                return Optional.empty();
+            }
+
+            Map<String, BigDecimal> rates = dto.getExchangeRates();
+
+            Map<String, BigDecimal> filteredRates = rates.entrySet().stream()
                     .filter(e -> currencyCodes.contains(e.getKey()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            return Optional.of(filteredRates);
         }
-        catch (Exception ex) {
+        catch (RestClientException ex) {
+            log.error("External API error: {}", ex.getMessage(), ex);
             return Optional.empty();
         }
     }

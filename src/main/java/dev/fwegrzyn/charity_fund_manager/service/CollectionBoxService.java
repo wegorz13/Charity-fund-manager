@@ -39,26 +39,26 @@ public class CollectionBoxService {
                 .map(c -> new CollectionBoxBalance(c.id(), BigDecimal.ZERO))
                 .collect(Collectors.toSet());
 
-        CollectionBox box = new CollectionBox(null, null, balances);
+        CollectionBox box = CollectionBox.builder().balances(balances).build();
 
         return collectionBoxRepository.save(box);
     }
 
-    public List<CollectionBoxDTO> getBoxes(){
-        List<CollectionBox> boxes = collectionBoxRepository.findAll();
+    public List<CollectionBoxDTO> getBoxes() {
+        return collectionBoxRepository.findAll().stream()
+                .map(this::mapBoxToDto)
+                .toList();
+    }
 
-        return boxes.stream().map((box) -> {
-            boolean hasAnyMoney = box.getBalances().stream()
-                    .anyMatch(balance -> balance.getAmount().compareTo(BigDecimal.ZERO) > 0);
+    private CollectionBoxDTO mapBoxToDto(CollectionBox box) {
+        boolean hasAnyMoney = box.getBalances().stream()
+                .anyMatch(b -> b.getAmount().compareTo(BigDecimal.ZERO) > 0);
 
-            CollectionBoxDTO responseBox = new CollectionBoxDTO();
-
-            responseBox.setAssigned(box.getEventId() != null);
-            responseBox.setEmpty(!hasAnyMoney);
-            responseBox.setId(box.getId());
-
-            return responseBox;
-        }).toList();
+        return CollectionBoxDTO.builder()
+                .id(box.getId())
+                .assigned(box.getEventId() != null)
+                .empty(!hasAnyMoney)
+                .build();
     }
 
     public void deleteById(Integer boxId){
