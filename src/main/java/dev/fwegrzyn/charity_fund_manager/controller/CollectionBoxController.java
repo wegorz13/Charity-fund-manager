@@ -43,14 +43,14 @@ public class CollectionBoxController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/donate")
+    @PostMapping("/donate")
     public ResponseEntity<Void> donateMoneyToBox(@RequestBody @Valid DonateRequest request) {
         collectionBoxService.donateMoneyToBox(request.boxId(), request.currency(), request.amount());
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/transfer")
-    public ResponseEntity<Void> transferMoneyToEvent(@RequestParam("box_id") Integer boxId) {
+    @PostMapping("/transfer/{id}")
+    public ResponseEntity<Void> transferMoneyToEvent(@PathVariable("id") Integer boxId) {
         collectionBoxService.transferMoneyToEvent(boxId);
         return ResponseEntity.noContent().build();
     }

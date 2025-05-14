@@ -2,7 +2,6 @@ package dev.fwegrzyn.charity_fund_manager.service;
 
 import dev.fwegrzyn.charity_fund_manager.dto.response.CollectionBoxDTO;
 import dev.fwegrzyn.charity_fund_manager.exception.BoxAlreadyAssignedException;
-import dev.fwegrzyn.charity_fund_manager.exception.BoxNotEmptyException;
 import dev.fwegrzyn.charity_fund_manager.exception.ResourceNotFoundException;
 import dev.fwegrzyn.charity_fund_manager.model.*;
 import dev.fwegrzyn.charity_fund_manager.model.Currency;

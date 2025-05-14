@@ -2,6 +2,7 @@ package dev.fwegrzyn.charity_fund_manager.service;
 
 import dev.fwegrzyn.charity_fund_manager.dto.response.CollectionBoxDTO;
 import dev.fwegrzyn.charity_fund_manager.exception.BoxAlreadyAssignedException;
+import dev.fwegrzyn.charity_fund_manager.exception.BoxNotAssignedException;
 import dev.fwegrzyn.charity_fund_manager.exception.BoxNotEmptyException;
 import dev.fwegrzyn.charity_fund_manager.exception.ResourceNotFoundException;
 import dev.fwegrzyn.charity_fund_manager.model.*;
@@ -52,7 +53,7 @@ public class CollectionBoxService {
 
             CollectionBoxDTO responseBox = new CollectionBoxDTO();
 
-            responseBox.setAssigned(box.getEventId()!=null);
+            responseBox.setAssigned(box.getEventId() != null);
             responseBox.setEmpty(!hasAnyMoney);
             responseBox.setId(box.getId());
 
@@ -61,14 +62,12 @@ public class CollectionBoxService {
     }
 
     public void deleteById(Integer boxId){
-        CollectionBox box = collectionBoxRepository.findById(boxId).
-                orElseThrow(() -> new ResourceNotFoundException("Box " + boxId + " not found"));
+        CollectionBox box = getBoxOrThrow(boxId);
         collectionBoxRepository.delete(box);
     }
 
     public void assignBoxToEvent(Integer boxId, Integer eventId){
-        CollectionBox box = collectionBoxRepository.findById(boxId)
-                .orElseThrow(() -> new ResourceNotFoundException("Box " + boxId + " not found"));
+        CollectionBox box = getBoxOrThrow(boxId);
 
         if (box.getEventId() != null) {
             throw new BoxAlreadyAssignedException(boxId);
@@ -90,8 +89,7 @@ public class CollectionBoxService {
     }
 
     public void donateMoneyToBox(Integer boxId, String currencyCode, BigDecimal amount) {
-        CollectionBox box = collectionBoxRepository.findById(boxId)
-                .orElseThrow(() -> new ResourceNotFoundException("Box " + boxId + " not found"));
+        CollectionBox box = getBoxOrThrow(boxId);
 
         Currency currency = currencyRepository.findByCode(currencyCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Currency " + currencyCode + " not found"));
@@ -111,40 +109,58 @@ public class CollectionBoxService {
 
     @Transactional
     public void transferMoneyToEvent(Integer boxId){
-        CollectionBox box = collectionBoxRepository.findById(boxId)
-                .orElseThrow(() -> new ResourceNotFoundException("Box " + boxId + " not found"));
+        CollectionBox box = getBoxOrThrow(boxId);
 
         Integer eventId = box.getEventId();
 
-        FundraisingEvent event = fundraisingEventRepository.findById(eventId)
-                .orElseThrow(() -> new ResourceNotFoundException("Event " + eventId + " not found"));
+        if (eventId == null) {
+            throw new BoxNotAssignedException(boxId);
+        }
 
-        Currency eventCurrency = currencyRepository.findById(event.getCurrencyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Currency " + event.getCurrencyId() + " not found"));
+        FundraisingEvent event = getFundraisingEventOrThrow(eventId);
+
+        Currency eventCurrency = getCurrencyOrThrow(event.getCurrencyId());
 
         List<ExchangeRate> ratesToEvent = exchangeRateRepository.findByToCurrencyId(eventCurrency.id());
         Map<Integer, BigDecimal> rateMap = ratesToEvent.stream()
                 .collect(Collectors.toMap(ExchangeRate::fromCurrencyId, ExchangeRate::rate));
 
-        BigDecimal total = BigDecimal.ZERO;
-
-        for(CollectionBoxBalance balance: box.getBalances()) {
-            Currency balanceCurrency = currencyRepository.findById(balance.getCurrencyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Currency " + balance.getCurrencyId() + " not found"));
-    
-            BigDecimal exchangeRate = rateMap.get(balanceCurrency.id());
-
-            if (exchangeRate == null) {
-                throw new ResourceNotFoundException(
-                        String.format("No exchange rate from %s to %s", balance.getCurrencyId(), eventCurrency.code()));
-            }
-
-            total = total.add(balance.getAmount().multiply(exchangeRate));
-            balance.setAmount(BigDecimal.ZERO);
-        }
+        BigDecimal total = calculateAndResetBalances(box, rateMap);
 
         event.setMoney(event.getMoney().add(total));
         collectionBoxRepository.save(box);
         fundraisingEventRepository.save(event);
+    }
+
+    private BigDecimal calculateAndResetBalances(CollectionBox box, Map<Integer, BigDecimal> rateMap) {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (CollectionBoxBalance balance : box.getBalances()) {
+            BigDecimal rate = rateMap.get(balance.getCurrencyId());
+
+            if (rate == null) {
+                throw new ResourceNotFoundException(
+                        String.format("Missing exchange rate from %s", balance.getCurrencyId()));
+            }
+
+            total = total.add(balance.getAmount().multiply(rate));
+            balance.setAmount(BigDecimal.ZERO);
+        }
+        return total;
+    }
+
+    private CollectionBox getBoxOrThrow(Integer boxId){
+        return collectionBoxRepository.findById(boxId)
+                .orElseThrow(() -> new ResourceNotFoundException("Box with ID: " + boxId + " not found"));
+    }
+
+    private Currency getCurrencyOrThrow(Integer currencyId){
+        return currencyRepository.findById(currencyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Currency with ID: " + currencyId + " not found"));
+    }
+
+    private FundraisingEvent getFundraisingEventOrThrow(Integer eventId){
+        return fundraisingEventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Event with ID: " + eventId + " not found"));
     }
 }

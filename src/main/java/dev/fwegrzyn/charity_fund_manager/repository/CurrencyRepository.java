@@ -11,7 +11,6 @@ import java.util.Optional;
 @Repository
 public interface CurrencyRepository extends CrudRepository<Currency, Integer> {
     Optional<Currency> findByCode(String code);
-    @Override
-    @NonNull
+    @Override @NonNull
     List<Currency> findAll();
 }

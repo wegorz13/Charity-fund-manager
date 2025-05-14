@@ -7,5 +7,4 @@ public record CreateFundraisingEventRequest(
         @NotBlank @Size(max = 255)
         String name,
         @NotBlank @Size(min = 3, max = 3)
-        String currency){
-}
+        String currency){}
