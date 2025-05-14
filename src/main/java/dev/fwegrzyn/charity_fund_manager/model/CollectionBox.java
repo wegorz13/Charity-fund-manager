@@ -41,4 +41,8 @@ public class CollectionBox {
     public void setBalances(Set<CollectionBoxBalance> balances) {
         this.balances = balances;
     }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 }

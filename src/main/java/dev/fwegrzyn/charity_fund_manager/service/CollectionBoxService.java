@@ -70,12 +70,12 @@ public class CollectionBoxService {
         CollectionBox box = collectionBoxRepository.findById(boxId)
                 .orElseThrow(() -> new ResourceNotFoundException("Box " + boxId + " not found"));
 
-        if (!fundraisingEventRepository.existsById(eventId)) {
-            throw new ResourceNotFoundException("Event " + eventId + " not found");
-        }
-
         if (box.getEventId() != null) {
             throw new BoxAlreadyAssignedException(boxId);
+        }
+
+        if (!fundraisingEventRepository.existsById(eventId)) {
+            throw new ResourceNotFoundException("Event " + eventId + " not found");
         }
 
         boolean hasMoney = box.getBalances().stream()

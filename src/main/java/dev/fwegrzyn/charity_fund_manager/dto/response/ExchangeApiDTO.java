@@ -25,11 +25,13 @@ public class ExchangeApiDTO {
     private String baseCode;
 
     @JsonProperty("conversion_rates")
-    private Map<String, BigDecimal> conversionRates;
+    private Map<String, BigDecimal> exchangeRates;
 
 
-    public Map<String, BigDecimal> getConversionRates() {
-        return conversionRates;
+    public Map<String, BigDecimal> getExchangeRates() {
+        return exchangeRates;
     }
-
+    public void setExchangeRates(Map<String, BigDecimal> exchangeRates) {
+        this.exchangeRates = exchangeRates;
+    }
 }

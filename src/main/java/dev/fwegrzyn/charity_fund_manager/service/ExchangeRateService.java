@@ -30,7 +30,7 @@ public class ExchangeRateService {
                     .retrieve()
                     .body(ExchangeApiDTO.class);
 
-            return Optional.of(dto.getConversionRates().entrySet().stream()
+            return Optional.of(dto.getExchangeRates().entrySet().stream()
                     .filter(e -> currencyCodes.contains(e.getKey()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
         }
@@ -38,6 +38,5 @@ public class ExchangeRateService {
             return Optional.empty();
         }
     }
-
 }
 
