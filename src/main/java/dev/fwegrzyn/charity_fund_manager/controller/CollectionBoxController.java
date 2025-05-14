@@ -1,13 +1,14 @@
 package dev.fwegrzyn.charity_fund_manager.controller;
 
+import dev.fwegrzyn.charity_fund_manager.dto.request.DonateRequest;
 import dev.fwegrzyn.charity_fund_manager.dto.response.CollectionBoxDTO;
 import dev.fwegrzyn.charity_fund_manager.model.CollectionBox;
 import dev.fwegrzyn.charity_fund_manager.service.CollectionBoxService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -32,24 +33,25 @@ public class CollectionBoxController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBox(@PathVariable("id") Integer id) {
-        boolean deleted = collectionBoxService.deleteById(id);
-
-        if (deleted) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        collectionBoxService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/assign")
-    public ResponseEntity<Void> assignBoxToEvent(@RequestParam Integer boxId, @RequestParam Integer eventId) {
+    public ResponseEntity<Void> assignBoxToEvent(@RequestParam("box_id") Integer boxId, @RequestParam("event_id") Integer eventId) {
         collectionBoxService.assignBoxToEvent(boxId, eventId);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/donate")
-    public ResponseEntity<Void> donateMoneyToBox(@RequestBody Integer boxId, @RequestBody String currency, @RequestBody BigDecimal amount) {
-        collectionBoxService.donateMoneyToBox(boxId, currency, amount);
+    public ResponseEntity<Void> donateMoneyToBox(@RequestBody @Valid DonateRequest request) {
+        collectionBoxService.donateMoneyToBox(request.boxId(), request.currency(), request.amount());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/transfer")
+    public ResponseEntity<Void> transferMoneyToEvent(@RequestParam("box_id") Integer boxId) {
+        collectionBoxService.transferMoneyToEvent(boxId);
         return ResponseEntity.noContent().build();
     }
 }

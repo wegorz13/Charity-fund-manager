@@ -1,7 +1,12 @@
+create table CURRENCIES(
+    id int auto_increment primary key,
+    code varchar(3) not null
+);
+
 create table FUNDRAISING_EVENTS(
     id int auto_increment primary key,
     name varchar(255) not null,
-    amount decimal(10,2) not null default 0.00,
+    money decimal(10,2) not null default 0.00,
     currency_id int not null,
     foreign key (currency_id) references CURRENCIES(id)
 );
@@ -21,12 +26,8 @@ create table COLLECTION_BOX_BALANCES(
     foreign key (currency_id) references CURRENCIES(id)
 );
 
-create table CURRENCIES(
-    id int auto_increment primary key,
-    name varchar(3) not null
-);
-
 create table EXCHANGE_RATES (
+    id int auto_increment primary key,
     from_currency_id int not null,
     to_currency_id int not null,
     rate decimal(10,6) not null,

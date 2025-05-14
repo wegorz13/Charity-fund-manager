@@ -1,6 +1,5 @@
 package dev.fwegrzyn.charity_fund_manager.repository;
 
-import dev.fwegrzyn.charity_fund_manager.model.CollectionBox;
 import dev.fwegrzyn.charity_fund_manager.model.Currency;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.NonNull;
@@ -11,8 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface CurrencyRepository extends CrudRepository<Currency, Integer> {
-    Optional<Currency> findByName(String name);
-
+    Optional<Currency> findByCode(String code);
     @Override
     @NonNull
     List<Currency> findAll();
