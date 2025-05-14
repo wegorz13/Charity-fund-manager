@@ -12,7 +12,7 @@ This project is an application created for managing collection boxes during fund
 
 ## API
 
-## Events ("/api/events")
+### Events ("/api/events")
 
 **create event POST("/")**
 
@@ -96,7 +96,7 @@ This project is an application created for managing collection boxes during fund
 			"response": []
 ```
 
-**assign box to event PUT("/assign?box_id=1,event_id=1")**
+**assign box to event PUT("/assign?box_id={box_id},event_id={event_id")**
 
 ```js
 "request": {
